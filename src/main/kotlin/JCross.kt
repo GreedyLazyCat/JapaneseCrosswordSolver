@@ -23,7 +23,6 @@ class JCross(
         row: Int,
         gridToValidate: List<MutableList<Int>>,
         rowHint: List<Int>,
-        colHints: List<List<Int>>,
     ): Boolean {
         val gridRowLength = gridToValidate.first().size
         val rowHintCopy = rowHint.toMutableList()
@@ -35,6 +34,7 @@ class JCross(
             Это нужно для отсеивания вариантов, которые проверяются на уже заполненных квадратах
          */
         for (col in 0..<gridRowLength) {
+//            println("Current Hint $currentHint value ${grid[row][col]} hint set $hintSet")
             if (hintSet && currentHint == 0 && grid[row][col] <= 0) {
                 if (rowHintCopy.isEmpty()) {
                     break
@@ -56,13 +56,57 @@ class JCross(
                 return false
             }
         }
-        if (currentHint > 0 && hintSet) {
+        if (currentHint > 0) {
             return false
         }
-        if (rowHintCopy.isNotEmpty())
-            {
+        if (rowHintCopy.isNotEmpty()) {
+            return false
+        }
+        return true
+    }
+
+    fun isColValid(
+        col: Int,
+        gridToValidate: List<MutableList<Int>>,
+        colHint: List<Int>,
+    ): Boolean {
+        val gridColLength = gridToValidate.size
+        val colHintCopy = colHint.toMutableList()
+        var currentHint = colHintCopy.removeFirst()
+        var hintSet = grid[0][col] > 0
+
+        /*
+            Проверка, что закрашенные квадраты в принципе подходят под подсказки
+            Это нужно для отсеивания вариантов, которые проверяются на уже заполненных квадратах
+         */
+        for (row in 0..<gridColLength) {
+            if (hintSet && currentHint == 0 && grid[row][col] <= 0) {
+                if (colHintCopy.isEmpty()) {
+                    break
+                }
+                hintSet = false
+                currentHint = colHintCopy.removeFirst()
+                continue
+            }
+            if (!hintSet && grid[row][col] > 0) {
+                hintSet = true
+            }
+            if (grid[row][col] > 0 && hintSet) {
+                currentHint -= 1
+            }
+            if (grid[row][col] > 0 && currentHint < 0 && hintSet) {
                 return false
             }
+            if (grid[row][col] <= 0 && currentHint >= 0 && hintSet) {
+                return false
+            }
+        }
+        if (currentHint > 0) {
+            return false
+        }
+        if (colHintCopy.isNotEmpty()) {
+            return false
+        }
         return true
     }
 
@@ -237,10 +281,70 @@ class JCross(
         }
     }
 
-    /**
-     * Шаг, на котором применяется эвристика пересечения самого правого и левого решения,
-     * до момента пока не будет закрашено новых квадратов
-     */
-    fun rightLeftOverlapsStep() {
+    fun colorRowByHintAndPlacement(
+        row: List<Int>,
+        rowHint: List<Int>,
+        placements: List<Int>,
+    ): MutableList<Int> {
+        val result = row.toMutableList()
+        for ((i, hint) in rowHint.withIndex()) {
+            val placement = placements[i]
+            for (j in placement..<(placement + hint)) {
+                if (result[j] >= 0) {
+                    result[j] = 1
+                }
+            }
+        }
+        return result
+    }
+
+    fun generateRowVariations(row: Int): List<List<Int>> {
+        val rowHint = rowHints[row].toMutableList()
+        val row = grid[row].toMutableList()
+        val initialLeftFigPlacement =
+            buildList<Int> {
+                add(0)
+                var prev = 0
+                for ((i, hint) in rowHint.withIndex()) {
+                    if (i == rowHint.size - 1) {
+                        break
+                    }
+                    prev += hint + 1
+                    add(prev)
+                }
+            }
+        var initialRightFigPlacement = listOf<Int>()
+
+        var curFigPlacement = initialLeftFigPlacement.toMutableList()
+        var curFig = 0
+        println("$initialLeftFigPlacement")
+        println(colorRowByHintAndPlacement(row, rowHint, curFigPlacement))
+        while (curFig < initialLeftFigPlacement.size) {
+            if (curFigPlacement.last() + 1 >= row.size) {
+                curFig += 1
+                if (initialRightFigPlacement.isEmpty()) {
+                    initialRightFigPlacement = curFigPlacement
+                }
+                curFigPlacement = initialLeftFigPlacement.toMutableList()
+                continue
+            }
+            curFigPlacement = addValueToRange(curFig, curFigPlacement.size - 1, 1, curFigPlacement)
+            println(curFigPlacement)
+            println(colorRowByHintAndPlacement(row, rowHint, curFigPlacement))
+        }
+        curFigPlacement = initialRightFigPlacement.toMutableList()
+        curFig = curFigPlacement.lastIndex - 1
+        while (curFig >= 0) {
+            if (curFigPlacement.first() - 1 < 0) {
+                curFig -= 1
+                curFigPlacement = initialRightFigPlacement.toMutableList()
+                continue
+            }
+            curFigPlacement = addValueToRange(0, curFig, -1, curFigPlacement)
+            println(curFigPlacement)
+            println(colorRowByHintAndPlacement(row, rowHint, curFigPlacement))
+        }
+
+        return listOf()
     }
 }
