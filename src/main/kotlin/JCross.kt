@@ -19,6 +19,53 @@ class JCross(
     val rowLength: Int
         get() = colHints.size
 
+    fun isRowValid(
+        row: Int,
+        gridToValidate: List<MutableList<Int>>,
+        rowHint: List<Int>,
+        colHints: List<List<Int>>,
+    ): Boolean {
+        val gridRowLength = gridToValidate.first().size
+        val rowHintCopy = rowHint.toMutableList()
+        var currentHint = rowHintCopy.removeFirst()
+        var hintSet = grid[row].first() > 0
+
+        /*
+            Проверка, что закрашенные квадраты в принципе подходят под подсказки
+            Это нужно для отсеивания вариантов, которые проверяются на уже заполненных квадратах
+         */
+        for (col in 0..<gridRowLength) {
+            if (hintSet && currentHint == 0 && grid[row][col] <= 0) {
+                if (rowHintCopy.isEmpty()) {
+                    break
+                }
+                hintSet = false
+                currentHint = rowHintCopy.removeFirst()
+                continue
+            }
+            if (!hintSet && grid[row][col] > 0) {
+                hintSet = true
+            }
+            if (grid[row][col] > 0 && hintSet) {
+                currentHint -= 1
+            }
+            if (grid[row][col] > 0 && currentHint < 0 && hintSet) {
+                return false
+            }
+            if (grid[row][col] <= 0 && currentHint >= 0 && hintSet) {
+                return false
+            }
+        }
+        if (currentHint > 0 && hintSet) {
+            return false
+        }
+        if (rowHintCopy.isNotEmpty())
+            {
+                return false
+            }
+        return true
+    }
+
     fun colorFullRow(row: Int) {
         for (col in 0..<grid[row].size) {
             grid[row][col] = 2
@@ -64,7 +111,7 @@ class JCross(
         for (hint in colHint) {
             val colorStart = start + freeSpace
             val colorEnd = start + hint - 1
-            colorRangeInCol(col, colorStart, colorEnd)
+            colorRangeInCol(col, colorStart, colorEnd, 2)
             start = colorEnd + 2
         }
     }
@@ -81,7 +128,7 @@ class JCross(
             val colorStart = start + freeSpace
             val colorEnd = start + hint - 1
 //            println("For hint $hint: ColorStart ${colorStart + 1} ColorEnd ${colorEnd + 1} Start ${start + 1} FreeSpace $freeSpace")
-            colorRangeInRow(row, colorStart, colorEnd)
+            colorRangeInRow(row, colorStart, colorEnd, 2)
             start = colorEnd + 2
         }
     }
@@ -90,10 +137,11 @@ class JCross(
         row: Int,
         colorStart: Int,
         colorEnd: Int,
+        value: Int,
     ) {
         val gridRow = grid[row]
         for (i in colorStart..colorEnd) {
-            gridRow[i] = 2
+            gridRow[i] = value
         }
     }
 
@@ -101,9 +149,39 @@ class JCross(
         col: Int,
         colorStart: Int,
         colorEnd: Int,
+        value: Int,
     ) {
         for (i in colorStart..colorEnd) {
-            grid[i][col] = 2
+            grid[i][col] = value
+        }
+    }
+
+    fun calculateLeftForRow(row: Int) {
+        val rowHint = rowHints[row].toMutableList()
+        rowHint.reverse()
+        val initPainted = mutableListOf<Int>()
+        for (i in (rowLength - 1) downTo 0) {
+            if (grid[row][i] > 0) {
+                initPainted.add(i)
+            }
+        }
+        val painted = initPainted.toMutableList()
+        var hintIndex = 0
+        var startPainted = painted.removeFirst()
+
+        while (true) {
+//            print("$painted ")
+            if (grid[row][startPainted] > 0 && rowHint[hintIndex] == 0) {
+                println("start painted: $startPainted hintIndex $hintIndex")
+                println("row hint $rowHint")
+                break
+            } else if (grid[row][startPainted] <= 0 && rowHint[hintIndex] == 0) {
+                hintIndex += 1
+                startPainted = painted.removeFirst()
+            } else {
+                rowHint[hintIndex] -= 1
+                startPainted -= 1
+            }
         }
     }
 
