@@ -91,19 +91,19 @@ class TempHardcodeCrosses {
     val cross5 =
         JCross(
             listOf(
-                listOf(2, 3, 1),
+                listOf(),
+                listOf(),
+                listOf(),
+                listOf(),
+                listOf(),
+                listOf(),
+                listOf(),
+                listOf(),
+                listOf(),
+                listOf(),
             ),
             listOf(
-                listOf(),
-                listOf(),
-                listOf(),
-                listOf(),
-                listOf(),
-                listOf(),
-                listOf(),
-                listOf(),
-                listOf(),
-                listOf(),
+                listOf(1, 2, 3),
             ),
         )
 }

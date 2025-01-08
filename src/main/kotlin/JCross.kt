@@ -64,49 +64,51 @@ class JCross(
         return true
     }
 
+    /**
+     * Здесь пробую другой подход, нежели чем в isRowValid. Здесь воспользуюсь списками,
+     * надеюсь сильно не увеличит сложность алгоритма.
+     */
     fun isColValid(
         col: Int,
         gridToValidate: List<MutableList<Int>>,
         colHint: List<Int>,
-    ): Boolean {
+    ): Validity {
         val gridColLength = gridToValidate.size
-        val colHintCopy = colHint.toMutableList()
-        var currentHint = colHintCopy.removeFirst()
         var hintSet = grid[0][col] > 0
-
+        val figures = mutableListOf(0)
+        var lastFigureRowIndex = 0
         /*
             Проверка, что закрашенные квадраты в принципе подходят под подсказки
             Это нужно для отсеивания вариантов, которые проверяются на уже заполненных квадратах
          */
         for (row in 0..<gridColLength) {
-            if (hintSet && currentHint == 0 && grid[row][col] <= 0) {
-                if (colHintCopy.isEmpty()) {
-                    break
-                }
-                hintSet = false
-                currentHint = colHintCopy.removeFirst()
-                continue
-            }
             if (!hintSet && grid[row][col] > 0) {
+                figures.add(0)
                 hintSet = true
             }
-            if (grid[row][col] > 0 && hintSet) {
-                currentHint -= 1
+            if (hintSet && grid[row][col] <= 0) {
+                hintSet = false
             }
-            if (grid[row][col] > 0 && currentHint < 0 && hintSet) {
-                return false
-            }
-            if (grid[row][col] <= 0 && currentHint >= 0 && hintSet) {
-                return false
+            if (hintSet) {
+                figures[figures.lastIndex] += 1
             }
         }
-        if (currentHint > 0) {
-            return false
+
+        if (figures.size > colHint.size) {
+            return Validity.Violated
         }
-        if (colHintCopy.isNotEmpty()) {
-            return false
+        if (figures == colHint) {
+            return Validity.Solved
         }
-        return true
+        for ((i, figure) in figures.withIndex()) {
+            if (figure > colHint[i]) {
+                return Validity.Violated
+            }
+            if (figure < colHint[i] && i != (colHint.lastIndex)) {
+                return Validity.Violated
+            }
+        }
+        return Validity.NotViolated
     }
 
     fun colorFullRow(row: Int) {
@@ -300,7 +302,6 @@ class JCross(
     fun generateRowVariations(row: Int): Sequence<List<Int>> {
         val rowHint = rowHints[row].toMutableList()
         val row = grid[row].toMutableList()
-        println("row hints $rowHint row $row")
         val spaceCount = row.size - rowHint.sum() - (rowHint.size - 1) // Кол-во свободных пробелов
         val spacePlacements =
             buildList<Int> {
