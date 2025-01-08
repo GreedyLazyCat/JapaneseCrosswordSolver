@@ -301,48 +301,18 @@ class JCross(
     fun generateRowVariations(row: Int): List<List<Int>> {
         val rowHint = rowHints[row].toMutableList()
         val row = grid[row].toMutableList()
-        val initialLeftFigPlacement =
+        val spaceCount = row.size - rowHint.sum() - (rowHint.size - 1) // Кол-во свободных пробелов
+        val spacePlacements =
             buildList<Int> {
-                add(0)
-                var prev = 0
-                for ((i, hint) in rowHint.withIndex()) {
-                    if (i == rowHint.size - 1) {
-                        break
-                    }
-                    prev += hint + 1
-                    add(prev)
+                for (i in 0..<spaceCount) {
+                    add(1)
                 }
-            }
-        var initialRightFigPlacement = listOf<Int>()
-
-        var curFigPlacement = initialLeftFigPlacement.toMutableList()
-        var curFig = 0
-        println("$initialLeftFigPlacement")
-        println(colorRowByHintAndPlacement(row, rowHint, curFigPlacement))
-        while (curFig < initialLeftFigPlacement.size) {
-            if (curFigPlacement.last() + 1 >= row.size) {
-                curFig += 1
-                if (initialRightFigPlacement.isEmpty()) {
-                    initialRightFigPlacement = curFigPlacement
+                for (i in 0..<(rowHint.size + 1 - spaceCount)) {
+                    add(0)
                 }
-                curFigPlacement = initialLeftFigPlacement.toMutableList()
-                continue
-            }
-            curFigPlacement = addValueToRange(curFig, curFigPlacement.size - 1, 1, curFigPlacement)
-            println(curFigPlacement)
-            println(colorRowByHintAndPlacement(row, rowHint, curFigPlacement))
-        }
-        curFigPlacement = initialRightFigPlacement.toMutableList()
-        curFig = curFigPlacement.lastIndex - 1
-        while (curFig >= 0) {
-            if (curFigPlacement.first() - 1 < 0) {
-                curFig -= 1
-                curFigPlacement = initialRightFigPlacement.toMutableList()
-                continue
-            }
-            curFigPlacement = addValueToRange(0, curFig, -1, curFigPlacement)
-            println(curFigPlacement)
-            println(colorRowByHintAndPlacement(row, rowHint, curFigPlacement))
+            }.permutations().toSet()
+        println(spacePlacements)
+        for (spacePlacement in spacePlacements) {
         }
 
         return listOf()
