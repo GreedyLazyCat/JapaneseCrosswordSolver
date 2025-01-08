@@ -1,7 +1,7 @@
 package org.example
 
-enum class Validity  {
+enum class Validity {
     Solved,
-    ViolatedCol,
-    ViolatedRow,
+    Violated,
+    NotViolated,
 }

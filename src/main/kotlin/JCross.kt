@@ -20,14 +20,13 @@ class JCross(
         get() = colHints.size
 
     fun isRowValid(
-        row: Int,
-        gridToValidate: List<MutableList<Int>>,
+        row: List<Int>,
         rowHint: List<Int>,
     ): Boolean {
-        val gridRowLength = gridToValidate.first().size
+        val gridRowLength = row.size
         val rowHintCopy = rowHint.toMutableList()
         var currentHint = rowHintCopy.removeFirst()
-        var hintSet = grid[row].first() > 0
+        var hintSet = row.first() > 0
 
         /*
             Проверка, что закрашенные квадраты в принципе подходят под подсказки
@@ -35,7 +34,7 @@ class JCross(
          */
         for (col in 0..<gridRowLength) {
 //            println("Current Hint $currentHint value ${grid[row][col]} hint set $hintSet")
-            if (hintSet && currentHint == 0 && grid[row][col] <= 0) {
+            if (hintSet && currentHint == 0 && row[col] <= 0) {
                 if (rowHintCopy.isEmpty()) {
                     break
                 }
@@ -43,16 +42,16 @@ class JCross(
                 currentHint = rowHintCopy.removeFirst()
                 continue
             }
-            if (!hintSet && grid[row][col] > 0) {
+            if (!hintSet && row[col] > 0) {
                 hintSet = true
             }
-            if (grid[row][col] > 0 && hintSet) {
+            if (row[col] > 0 && hintSet) {
                 currentHint -= 1
             }
-            if (grid[row][col] > 0 && currentHint < 0 && hintSet) {
+            if (row[col] > 0 && currentHint < 0 && hintSet) {
                 return false
             }
-            if (grid[row][col] <= 0 && currentHint >= 0 && hintSet) {
+            if (row[col] <= 0 && currentHint >= 0 && hintSet) {
                 return false
             }
         }
@@ -298,23 +297,44 @@ class JCross(
         return result
     }
 
-    fun generateRowVariations(row: Int): List<List<Int>> {
+    fun generateRowVariations(row: Int): Sequence<List<Int>> {
         val rowHint = rowHints[row].toMutableList()
         val row = grid[row].toMutableList()
+        println("row hints $rowHint row $row")
         val spaceCount = row.size - rowHint.sum() - (rowHint.size - 1) // Кол-во свободных пробелов
         val spacePlacements =
             buildList<Int> {
+                for (i in 0..<(rowHint.size)) {
+                    add(0)
+                }
                 for (i in 0..<spaceCount) {
                     add(1)
                 }
-                for (i in 0..<(rowHint.size + 1 - spaceCount)) {
-                    add(0)
-                }
             }.permutations().toSet()
-        println(spacePlacements)
-        for (spacePlacement in spacePlacements) {
-        }
 
-        return listOf()
+        return sequence<List<Int>> {
+            for (spacePlacement in spacePlacements) {
+                var colorPlacement = 0
+                var hintIndex = -1
+                val colorPlacements = mutableListOf<Int>()
+                for (placement in spacePlacement) {
+                    if (placement == 1) {
+                        colorPlacement += 1
+                        continue
+                    }
+                    var toAdd = 0
+                    if (hintIndex >= 0) {
+                        toAdd = rowHint[hintIndex] + 1
+                    }
+                    colorPlacement += toAdd
+                    colorPlacements.add(colorPlacement)
+                    hintIndex += 1
+                }
+                val coloredRow = colorRowByHintAndPlacement(row, rowHint, colorPlacements)
+                if (isRowValid(coloredRow, rowHint)) {
+                    yield(coloredRow)
+                }
+            }
+        }
     }
 }
