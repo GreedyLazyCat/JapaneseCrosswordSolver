@@ -2,8 +2,8 @@ package org.example
 
 fun main() {
     val crosses = TempHardcodeCrosses()
-    val cross = crosses.cross6
-    cross.initialStep()
+    val cross = crosses.teaPot
+//    cross.initialStep()
     cross.solveWithEnumeration()
     println(cross)
 }

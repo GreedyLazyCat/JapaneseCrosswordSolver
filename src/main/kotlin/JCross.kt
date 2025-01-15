@@ -144,7 +144,7 @@ class JCross(
     }
 
     fun colorFullCol(col: Int) {
-        for (row in 0..<rowLength) {
+        for (row in 0..<colLength) {
             grid[row][col] = 2
         }
     }
