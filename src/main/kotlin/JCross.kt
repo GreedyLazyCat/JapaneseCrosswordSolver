@@ -73,10 +73,25 @@ class JCross(
         gridToValidate: List<MutableList<Int>>,
         colHint: List<Int>,
     ): Validity {
+        val downsideValidity = isColValidDownside(col, gridToValidate, colHint)
+        if (downsideValidity != Validity.Violated) {
+            return downsideValidity
+        }
+        val upwardValidity = isColValidUpward(col, gridToValidate, colHint)
+        if (upwardValidity != Validity.Violated) {
+            return upwardValidity
+        }
+        return Validity.Violated
+    }
+
+    fun isColValidDownside(
+        col: Int,
+        gridToValidate: List<MutableList<Int>>,
+        colHint: List<Int>,
+    ): Validity {
         val gridColLength = gridToValidate.size
-        var hintSet = grid[0][col] > 0
-        val figures = mutableListOf(0)
-        var lastFigureRowIndex = 0
+        var hintSet = false
+        val figures = mutableListOf<Int>()
         /*
             Проверка, что закрашенные квадраты в принципе подходят под подсказки
             Это нужно для отсеивания вариантов, которые проверяются на уже заполненных квадратах
@@ -106,6 +121,58 @@ class JCross(
             }
             if (figure < colHint[i] && i != (colHint.lastIndex)) {
                 return Validity.Violated
+            }
+        }
+        return Validity.NotViolated
+    }
+
+    fun isColValidUpward(
+        col: Int,
+        gridToValidate: List<MutableList<Int>>,
+        colHint: List<Int>,
+    ): Validity {
+        val gridColLength = gridToValidate.size
+        val reverseColHint = colHint.reversed()
+        var hintSet = false
+        val figures = mutableListOf<Int>()
+        /*
+            Проверка, что закрашенные квадраты в принципе подходят под подсказки
+            Это нужно для отсеивания вариантов, которые проверяются на уже заполненных квадратах
+         */
+        for (row in (gridColLength - 1) downTo 0) {
+            if (!hintSet && grid[row][col] > 0) {
+                figures.add(0)
+                hintSet = true
+            }
+            if (hintSet && grid[row][col] <= 0) {
+                hintSet = false
+            }
+            if (hintSet) {
+                figures[figures.lastIndex] += 1
+            }
+        }
+        if (figures.size > colHint.size) {
+            return Validity.Violated
+        }
+        if (figures == reverseColHint) {
+            return Validity.Solved
+        }
+        for ((i, figure) in figures.reversed().withIndex()) {
+            if (figure > reverseColHint[i]) {
+                return Validity.Violated
+            }
+            if (figure < reverseColHint[i] && i != figures.lastIndex) {
+                return Validity.Violated
+            }
+        }
+        return Validity.NotViolated
+    }
+
+    fun gridColsValidity(): Validity {
+        for (i in 0..<colLength) {
+            var validity = isColValid(i, grid, colHints[i])
+            if (validity != Validity.NotViolated) {
+                return validity
             }
         }
         return Validity.NotViolated
@@ -299,6 +366,11 @@ class JCross(
         return result
     }
 
+    /**
+     * Генерирует все возможные варианты строки. Идея основана на комбинаторной задаче.
+     * Вычисляется количество свободных пробелов, а потом вычисляются все возможные перестановки
+     * этих пробелов между блоками.
+     */
     fun generateRowVariations(row: Int): Sequence<List<Int>> {
         val rowHint = rowHints[row].toMutableList()
         val row = grid[row].toMutableList()
@@ -337,5 +409,22 @@ class JCross(
                 }
             }
         }
+    }
+
+    fun solveWithEnumeration() {
+        val workingGrid = grid.toMutableList().map { it.toMutableList() } // Копирую матрицу для сохранности данных
+    }
+
+    override fun toString(): String {
+        var result = "Row hints: $rowHints\nCol hints: ${colHints}\nGrid:\n"
+        for (row in grid) {
+            var rowStr = ""
+            for (elem in row) {
+                rowStr += "$elem "
+            }
+            rowStr += "\n"
+            result += rowStr
+        }
+        return result
     }
 }
