@@ -92,10 +92,8 @@ class JCross(
         val gridColLength = gridToValidate.size
         var hintSet = false
         val figures = mutableListOf<Int>()
-        /*
-            Проверка, что закрашенные квадраты в принципе подходят под подсказки
-            Это нужно для отсеивания вариантов, которые проверяются на уже заполненных квадратах
-         */
+        var lastFigureEnd = 0
+
         for (row in 0..<gridColLength) {
             if (!hintSet && grid[row][col] > 0) {
                 figures.add(0)
@@ -103,24 +101,31 @@ class JCross(
             }
             if (hintSet && grid[row][col] <= 0) {
                 hintSet = false
+                if (figures.lastIndex < colHint.lastIndex) {
+                    lastFigureEnd = row
+                }
             }
             if (hintSet) {
                 figures[figures.lastIndex] += 1
             }
         }
-
         if (figures.size > colHint.size) {
             return Validity.Violated
         }
         if (figures == colHint) {
             return Validity.Solved
         }
-        for ((i, figure) in figures.withIndex()) {
-            if (figure > colHint[i]) {
-                return Validity.Violated
-            }
-            if (figure < colHint[i] && i != (colHint.lastIndex)) {
-                return Validity.Violated
+        if (figures.size == 1 && figures.last() > colHint.max()) {
+            return Validity.Violated
+        }
+        if (figures.size > 1) {
+            for ((i, figure) in figures.withIndex()) {
+                if (figure > colHint[i]) {
+                    return Validity.Violated
+                }
+                if (figure < colHint[i] && i != (colHint.lastIndex)) {
+                    return Validity.Violated
+                }
             }
         }
         return Validity.NotViolated
@@ -157,14 +162,20 @@ class JCross(
         if (figures == reverseColHint) {
             return Validity.Solved
         }
-        for ((i, figure) in figures.reversed().withIndex()) {
-            if (figure > reverseColHint[i]) {
-                return Validity.Violated
-            }
-            if (figure < reverseColHint[i] && i != figures.lastIndex) {
-                return Validity.Violated
-            }
+        if (figures.size == 1 && figures.last() > colHint.max()) {
+            return Validity.Violated
         }
+        if (figures.size > 1)
+            {
+                for ((i, figure) in figures.reversed().withIndex()) {
+                    if (figure > reverseColHint[i]) {
+                        return Validity.Violated
+                    }
+                    if (figure < reverseColHint[i] && i != figures.lastIndex) {
+                        return Validity.Violated
+                    }
+                }
+            }
         return Validity.NotViolated
     }
 
@@ -371,9 +382,9 @@ class JCross(
      * Вычисляется количество свободных пробелов, а потом вычисляются все возможные перестановки
      * этих пробелов между блоками.
      */
-    fun generateRowVariations(row: Int): Sequence<List<Int>> {
-        val rowHint = rowHints[row].toMutableList()
-        val row = grid[row].toMutableList()
+    fun generateRowVariations(rowIndex: Int): Sequence<Pair<Int, List<Int>>> {
+        val rowHint = rowHints[rowIndex].toMutableList()
+        val row = grid[rowIndex].toMutableList()
         val spaceCount = row.size - rowHint.sum() - (rowHint.size - 1) // Кол-во свободных пробелов
         val spacePlacements =
             buildList<Int> {
@@ -385,7 +396,7 @@ class JCross(
                 }
             }.permutations().toSet()
 
-        return sequence<List<Int>> {
+        return sequence {
             for (spacePlacement in spacePlacements) {
                 var colorPlacement = 0
                 var hintIndex = -1
@@ -405,7 +416,7 @@ class JCross(
                 }
                 val coloredRow = colorRowByHintAndPlacement(row, rowHint, colorPlacements)
                 if (isRowValid(coloredRow, rowHint)) {
-                    yield(coloredRow)
+                    yield(Pair(rowIndex, coloredRow))
                 }
             }
         }

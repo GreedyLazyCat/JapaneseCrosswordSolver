@@ -103,7 +103,7 @@ class TempHardcodeCrosses {
                 listOf(),
             ),
             listOf(
-                listOf(1, 2, 3),
+                listOf(3, 3),
             ),
         )
 }
