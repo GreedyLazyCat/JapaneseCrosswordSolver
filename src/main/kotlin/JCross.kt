@@ -390,6 +390,10 @@ class JCross(
                 continue
             }
             if (rowIndex == workingGrid.lastIndex) {
+                println("Validity: $validity")
+                tempPrintGrid(workingGrid)
+                println(tempCompareGrids(workingGrid, TempHardcodeCrosses().teaPotSolution))
+
                 if (validity == Validity.Solved) {
                     grid = workingGrid
                     break
@@ -404,6 +408,19 @@ class JCross(
             }
         }
         println(maxStackSize)
+    }
+
+    fun tempPrintGrid(gridToPrint: List<MutableList<Int>>) {
+        var result = ""
+        for (row in gridToPrint) {
+            var rowStr = ""
+            for (elem in row) {
+                rowStr += " ${if (elem > 0) "#" else "."} "
+            }
+            rowStr += "\n"
+            result += rowStr
+        }
+        println(result)
     }
 
     override fun toString(): String {

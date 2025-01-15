@@ -185,4 +185,16 @@ class TempHardcodeCrosses {
                 listOf(2, 3),
             ),
         )
+    val teaPotSolution =
+        listOf(
+            mutableListOf(0, 0, 1, 1, 1, 0, 0, 0, 0, 1),
+            mutableListOf(0, 1, 0, 0, 0, 1, 0, 0, 1, 1),
+            mutableListOf(0, 1, 0, 0, 0, 1, 0, 0, 1, 0),
+            mutableListOf(0, 1, 1, 1, 1, 1, 1, 0, 0, 1),
+            mutableListOf(1, 1, 0, 0, 0, 0, 1, 1, 1, 1),
+            mutableListOf(1, 0, 1, 1, 0, 0, 0, 1, 0, 1),
+            mutableListOf(1, 0, 1, 1, 1, 0, 0, 0, 1, 0),
+            mutableListOf(1, 1, 0, 0, 0, 0, 0, 1, 0, 0),
+            mutableListOf(0, 1, 1, 2, 2, 2, 1, 0, 0, 0),
+        )
 }

@@ -13,6 +13,29 @@ fun addValueToRange(
     return copy
 }
 
+fun tempCompareGrids(
+    A: List<MutableList<Int>>,
+    B: List<MutableList<Int>>,
+): Boolean {
+    for (i in A.indices) {
+        for (j in B.indices) {
+            if (A[i][j] == 0 && B[i][j] != 0)
+                {
+                    return false
+                }
+            if (A[i][j] > 0 && B[i][j] < 0)
+                {
+                    return false
+                }
+            if (A[i][j] < 0 && B[i][j] > 0)
+                {
+                    return false
+                }
+        }
+    }
+    return true
+}
+
 val <T> List<T>.head: T
     get() = first()
 
