@@ -106,4 +106,37 @@ class TempHardcodeCrosses {
                 listOf(3, 3),
             ),
         )
+    val cross6 =
+        JCross(
+            listOf(
+                listOf(1, 4),
+                listOf(1, 1, 3, 1),
+                listOf(1, 1, 1),
+                listOf(2, 1, 2, 2),
+                listOf(2, 1, 1, 1),
+                listOf(1, 3),
+                listOf(1, 2, 1, 2),
+                listOf(2, 1, 1, 1),
+                listOf(1, 1, 1, 1),
+                listOf(1, 3),
+                listOf(1, 1, 1),
+                listOf(1, 1, 1),
+                listOf(1, 1, 1),
+                listOf(3),
+            ),
+            listOf(
+                listOf(1, 1),
+                listOf(3),
+                listOf(2, 6),
+                listOf(1, 1, 3),
+                listOf(1),
+                listOf(3, 3, 3),
+                listOf(2, 1, 1, 1, 1),
+                listOf(2, 3, 2, 1),
+                listOf(2, 1, 1, 1, 1),
+                listOf(1, 3, 3, 3),
+                listOf(1, 1),
+                listOf(1),
+            ),
+        )
 }

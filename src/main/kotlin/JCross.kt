@@ -1,5 +1,7 @@
 package org.example
 
+import java.util.Stack
+
 class JCross(
     val rowHints: List<List<Int>>,
     val colHints: List<List<Int>>,
@@ -11,7 +13,7 @@ class JCross(
      * 2 - однозначно закрашен
      * -1 - однозначно не закрашен
      */
-    val grid: List<MutableList<Int>> = List(rowHints.size) { MutableList(colHints.size) { 0 } }
+    var grid: List<MutableList<Int>> = List(rowHints.size) { MutableList(colHints.size) { 0 } }
 
     val colLength: Int
         get() = rowHints.size
@@ -80,11 +82,11 @@ class JCross(
         val figures = mutableListOf<Int>()
 
         for (row in 0..<gridColLength) {
-            if (!hintSet && grid[row][col] > 0) {
+            if (!hintSet && gridToValidate[row][col] > 0) {
                 figures.add(0)
                 hintSet = true
             }
-            if (hintSet && grid[row][col] <= 0) {
+            if (hintSet && gridToValidate[row][col] <= 0) {
                 hintSet = false
             }
             if (hintSet) {
@@ -97,7 +99,7 @@ class JCross(
         if (figures == colHint) {
             return Validity.Solved
         }
-        if (figures.max() > colHint.max()) {
+        if (figures.isNotEmpty() && figures.max() > colHint.max()) {
             return Validity.Violated
         }
 
@@ -105,13 +107,34 @@ class JCross(
     }
 
     fun gridColsValidity(): Validity {
+        var colsValidity = Validity.Solved
         for (i in 0..<colLength) {
             var validity = isColValid(i, grid, colHints[i])
-            if (validity != Validity.NotViolated) {
+            if (validity == Validity.Violated) {
                 return validity
             }
+            if (validity != Validity.Solved) {
+                colsValidity = validity
+            }
         }
-        return Validity.NotViolated
+        return colsValidity
+    }
+
+    fun gridColsValidity(
+        workingGrid: List<MutableList<Int>>,
+        workingColHints: List<List<Int>>,
+    ): Validity {
+        var colsValidity = Validity.Solved
+        for (i in workingColHints.indices) {
+            var validity = isColValid(i, workingGrid, workingColHints[i])
+            if (validity == Validity.Violated) {
+                return validity
+            }
+            if (validity != Validity.Solved) {
+                colsValidity = validity
+            }
+        }
+        return colsValidity
     }
 
     fun colorFullRow(row: Int) {
@@ -307,9 +330,13 @@ class JCross(
      * Вычисляется количество свободных пробелов, а потом вычисляются все возможные перестановки
      * этих пробелов между блоками.
      */
-    fun generateRowVariations(rowIndex: Int): Sequence<Pair<Int, List<Int>>> {
-        val rowHint = rowHints[rowIndex].toMutableList()
-        val row = grid[rowIndex].toMutableList()
+    fun generateRowVariations(
+        rowIndex: Int,
+        workingGrid: List<List<Int>>,
+        initRowHint: List<Int>,
+    ): Sequence<Pair<Int, List<Int>>> {
+        val rowHint = initRowHint.toMutableList()
+        val row = workingGrid[rowIndex].toMutableList()
         val spaceCount = row.size - rowHint.sum() - (rowHint.size - 1) // Кол-во свободных пробелов
         val spacePlacements =
             buildList<Int> {
@@ -348,7 +375,35 @@ class JCross(
     }
 
     fun solveWithEnumeration() {
-        val workingGrid = grid.toMutableList().map { it.toMutableList() } // Копирую матрицу для сохранности данных
+        val workingGrid = grid.map { it.toMutableList() }.toMutableList() // Копирую матрицу для сохранности данных
+        val stack = Stack<Pair<Int, List<Int>>>()
+        var maxStackSize = 0
+        stack.addAll(generateRowVariations(0, workingGrid, rowHints[0]))
+        while (stack.isNotEmpty()) {
+            val (rowIndex, variation) = stack.pop()
+            workingGrid[rowIndex] = variation.toMutableList()
+
+            val validity = gridColsValidity(workingGrid, colHints)
+
+            if (validity == Validity.Violated) {
+                workingGrid[rowIndex] = grid[rowIndex]
+                continue
+            }
+            if (rowIndex == workingGrid.lastIndex) {
+                if (validity == Validity.Solved) {
+                    grid = workingGrid
+                    break
+                } else if (validity == Validity.NotViolated) {
+                    workingGrid[rowIndex] = grid[rowIndex]
+                    continue
+                }
+            }
+            stack.addAll(generateRowVariations(rowIndex + 1, workingGrid, rowHints[rowIndex + 1]))
+            if (stack.size > maxStackSize) {
+                maxStackSize = stack.size
+            }
+        }
+        println(maxStackSize)
     }
 
     override fun toString(): String {
