@@ -67,24 +67,10 @@ class JCross(
     /**
      * Здесь пробую другой подход, нежели чем в isRowValid. Здесь воспользуюсь списками,
      * надеюсь сильно не увеличит сложность алгоритма.
+     * P.s. Проверка стобца на правильность - тоже не простая задача. Реально проверить можно
+     * только грубые ошибки, например, фигуры 3, а в подсказках 2 значение - сразу нарушение.
      */
     fun isColValid(
-        col: Int,
-        gridToValidate: List<MutableList<Int>>,
-        colHint: List<Int>,
-    ): Validity {
-        val downsideValidity = isColValidDownside(col, gridToValidate, colHint)
-        if (downsideValidity != Validity.Violated) {
-            return downsideValidity
-        }
-        val upwardValidity = isColValidUpward(col, gridToValidate, colHint)
-        if (upwardValidity != Validity.Violated) {
-            return upwardValidity
-        }
-        return Validity.Violated
-    }
-
-    fun isColValidDownside(
         col: Int,
         gridToValidate: List<MutableList<Int>>,
         colHint: List<Int>,
@@ -92,7 +78,6 @@ class JCross(
         val gridColLength = gridToValidate.size
         var hintSet = false
         val figures = mutableListOf<Int>()
-        var lastFigureEnd = 0
 
         for (row in 0..<gridColLength) {
             if (!hintSet && grid[row][col] > 0) {
@@ -101,9 +86,6 @@ class JCross(
             }
             if (hintSet && grid[row][col] <= 0) {
                 hintSet = false
-                if (figures.lastIndex < colHint.lastIndex) {
-                    lastFigureEnd = row
-                }
             }
             if (hintSet) {
                 figures[figures.lastIndex] += 1
@@ -115,67 +97,10 @@ class JCross(
         if (figures == colHint) {
             return Validity.Solved
         }
-        if (figures.size == 1 && figures.last() > colHint.max()) {
+        if (figures.max() > colHint.max()) {
             return Validity.Violated
         }
-        if (figures.size > 1) {
-            for ((i, figure) in figures.withIndex()) {
-                if (figure > colHint[i]) {
-                    return Validity.Violated
-                }
-                if (figure < colHint[i] && i != (colHint.lastIndex)) {
-                    return Validity.Violated
-                }
-            }
-        }
-        return Validity.NotViolated
-    }
 
-    fun isColValidUpward(
-        col: Int,
-        gridToValidate: List<MutableList<Int>>,
-        colHint: List<Int>,
-    ): Validity {
-        val gridColLength = gridToValidate.size
-        val reverseColHint = colHint.reversed()
-        var hintSet = false
-        val figures = mutableListOf<Int>()
-        /*
-            Проверка, что закрашенные квадраты в принципе подходят под подсказки
-            Это нужно для отсеивания вариантов, которые проверяются на уже заполненных квадратах
-         */
-        for (row in (gridColLength - 1) downTo 0) {
-            if (!hintSet && grid[row][col] > 0) {
-                figures.add(0)
-                hintSet = true
-            }
-            if (hintSet && grid[row][col] <= 0) {
-                hintSet = false
-            }
-            if (hintSet) {
-                figures[figures.lastIndex] += 1
-            }
-        }
-        if (figures.size > colHint.size) {
-            return Validity.Violated
-        }
-        if (figures == reverseColHint) {
-            return Validity.Solved
-        }
-        if (figures.size == 1 && figures.last() > colHint.max()) {
-            return Validity.Violated
-        }
-        if (figures.size > 1)
-            {
-                for ((i, figure) in figures.reversed().withIndex()) {
-                    if (figure > reverseColHint[i]) {
-                        return Validity.Violated
-                    }
-                    if (figure < reverseColHint[i] && i != figures.lastIndex) {
-                        return Validity.Violated
-                    }
-                }
-            }
         return Validity.NotViolated
     }
 
