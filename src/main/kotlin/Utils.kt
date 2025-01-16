@@ -1,18 +1,5 @@
 package org.example
 
-fun addValueToRange(
-    from: Int,
-    to: Int,
-    value: Int,
-    list: List<Int>,
-): MutableList<Int> {
-    val copy = list.toMutableList()
-    for (i in from..to) {
-        copy[i] += value
-    }
-    return copy
-}
-
 fun resetGrid(
     fromGrid: Array<IntArray>,
     toGrid: Array<IntArray>,
@@ -24,26 +11,6 @@ fun resetGrid(
     return toGrid
 }
 
-fun tempCompareGrids(
-    A: List<MutableList<Int>>,
-    B: List<MutableList<Int>>,
-): Boolean {
-    for (i in A.indices) {
-        for (j in B.indices) {
-            if (A[i][j] == 0 && B[i][j] != 0) {
-                return false
-            }
-            if (A[i][j] > 0 && B[i][j] < 0) {
-                return false
-            }
-            if (A[i][j] < 0 && B[i][j] > 0) {
-                return false
-            }
-        }
-    }
-    return true
-}
-
 val <T> List<T>.head: T
     get() = first()
 
@@ -51,9 +18,10 @@ val <T> List<T>.tail: List<T>
     get() = drop(1)
 
 /**
- * Честно конкретно это не моя функция, в любом случае я тут
- * воспользовался, взята из гитхаба, но это самый быстрый вариант и то,
- * что сам пробовал реализовывать отдельно по скорости не сравниться.
+ * Честно конкретно это не моя функция она взята с гитхаба.
+ * В любом случае я тут воспользовался бы библиотекой.
+ * Функция ниже - самый быстрый вариант.
+ * То что сам пробовал реализовывать отдельно по скорости не сравниться.
  * Лучше я не сделаю.
  * Используя другие варианты кроссворд tea_pot решается за более чем 7 минут.
  * С этим - за минуту.
