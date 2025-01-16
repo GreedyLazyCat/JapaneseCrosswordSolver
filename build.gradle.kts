@@ -12,14 +12,21 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
 }
 
 tasks.test {
     useJUnitPlatform()
 }
+
 kotlin {
     jvmToolchain(21)
 }
+
 application {
-    mainClass = "Main"
+    mainClass = "org.example.MainKt"
+}
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }

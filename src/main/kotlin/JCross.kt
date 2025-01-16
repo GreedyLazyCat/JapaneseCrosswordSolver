@@ -26,44 +26,23 @@ class JCross(
         rowHint: List<Int>,
     ): Boolean {
         val gridRowLength = row.size
-        val rowHintCopy = rowHint.toMutableList()
-        var currentHint = rowHintCopy.removeFirst()
-        var hintSet = row.first() > 0
+        var hintSet = false
+        val figures = mutableListOf<Int>()
 
-        /*
-            Проверка, что закрашенные квадраты в принципе подходят под подсказки
-            Это нужно для отсеивания вариантов, которые проверяются на уже заполненных квадратах
-         */
-        for (col in 0..<gridRowLength) {
-//            println("Current Hint $currentHint value ${grid[row][col]} hint set $hintSet")
-            if (hintSet && currentHint == 0 && row[col] <= 0) {
-                if (rowHintCopy.isEmpty()) {
-                    break
-                }
-                hintSet = false
-                currentHint = rowHintCopy.removeFirst()
-                continue
-            }
-            if (!hintSet && row[col] > 0) {
+        for (i in 0..<gridRowLength) {
+            if (!hintSet && row[i] > 0) {
+                figures.add(0)
                 hintSet = true
             }
-            if (row[col] > 0 && hintSet) {
-                currentHint -= 1
+            if (hintSet && row[i] <= 0) {
+                hintSet = false
             }
-            if (row[col] > 0 && currentHint < 0 && hintSet) {
-                return false
-            }
-            if (row[col] <= 0 && currentHint >= 0 && hintSet) {
-                return false
+            if (hintSet) {
+                figures[figures.lastIndex] += 1
             }
         }
-        if (currentHint > 0) {
-            return false
-        }
-        if (rowHintCopy.isNotEmpty()) {
-            return false
-        }
-        return true
+
+        return figures == rowHint
     }
 
     /**
@@ -76,12 +55,13 @@ class JCross(
         col: Int,
         gridToValidate: List<MutableList<Int>>,
         colHint: List<Int>,
+        checkLength: Int,
     ): Validity {
-        val gridColLength = gridToValidate.size
+//        val gridColLength = gridToValidate.size
         var hintSet = false
         val figures = mutableListOf<Int>()
 
-        for (row in 0..<gridColLength) {
+        for (row in 0..<checkLength) {
             if (!hintSet && gridToValidate[row][col] > 0) {
                 figures.add(0)
                 hintSet = true
@@ -93,9 +73,9 @@ class JCross(
                 figures[figures.lastIndex] += 1
             }
         }
-        if (figures.size > colHint.size) {
-            return Validity.Violated
-        }
+//        if (figures.size > colHint.size) {
+//            return Validity.Violated
+//        }
         if (figures == colHint) {
             return Validity.Solved
         }
@@ -106,10 +86,10 @@ class JCross(
         return Validity.NotViolated
     }
 
-    fun gridColsValidity(): Validity {
+    fun gridColsValidity(checkLength: Int): Validity {
         var colsValidity = Validity.Solved
         for (i in 0..<colLength) {
-            var validity = isColValid(i, grid, colHints[i])
+            var validity = isColValid(i, grid, colHints[i], checkLength)
             if (validity == Validity.Violated) {
                 return validity
             }
@@ -123,10 +103,11 @@ class JCross(
     fun gridColsValidity(
         workingGrid: List<MutableList<Int>>,
         workingColHints: List<List<Int>>,
+        checkLength: Int,
     ): Validity {
         var colsValidity = Validity.Solved
         for (i in workingColHints.indices) {
-            var validity = isColValid(i, workingGrid, workingColHints[i])
+            var validity = isColValid(i, workingGrid, workingColHints[i], checkLength)
             if (validity == Validity.Violated) {
                 return validity
             }
@@ -280,10 +261,10 @@ class JCross(
                 continue
             }
 //            print("Minspace $minSpace rowlength $rowLength sub ${rowLength - rowHint.max()}")
-            if (minSpace < rowLength && minSpace > (rowLength - (rowHint.maxOrNull() ?: 0))) {
-                colorRowOverlaps(i, rowHint, hintSum)
-                continue
-            }
+//            if (minSpace < rowLength && minSpace > (rowLength - (rowHint.maxOrNull() ?: 0))) {
+//                colorRowOverlaps(i, rowHint, hintSum)
+//                continue
+//            }
             // -------
         }
         for ((i, colHint) in colHints.withIndex()) {
@@ -375,47 +356,37 @@ class JCross(
     }
 
     fun solveWithEnumeration() {
-        val workingGrid = grid.map { it.toMutableList() }.toMutableList() // Копирую матрицу для сохранности данных
+        var workingGrid = grid.map { it.toMutableList() }.toMutableList() // Копирую матрицу для сохранности данных
         val stack = Stack<Pair<Int, List<Int>>>()
-        var maxStackSize = 0
         stack.addAll(generateRowVariations(0, workingGrid, rowHints[0]))
         while (stack.isNotEmpty()) {
             val (rowIndex, variation) = stack.pop()
+            workingGrid = resetGrid(grid, workingGrid, rowIndex)
             workingGrid[rowIndex] = variation.toMutableList()
 
-            val validity = gridColsValidity(workingGrid, colHints)
+            val validity = gridColsValidity(workingGrid, colHints, checkLength = rowIndex)
 
             if (validity == Validity.Violated) {
-                workingGrid[rowIndex] = grid[rowIndex]
                 continue
             }
             if (rowIndex == workingGrid.lastIndex) {
-                println("Validity: $validity")
-                tempPrintGrid(workingGrid)
-                println(tempCompareGrids(workingGrid, TempHardcodeCrosses().teaPotSolution))
-
                 if (validity == Validity.Solved) {
                     grid = workingGrid
                     break
-                } else if (validity == Validity.NotViolated) {
-                    workingGrid[rowIndex] = grid[rowIndex]
+                } else {
                     continue
                 }
             }
             stack.addAll(generateRowVariations(rowIndex + 1, workingGrid, rowHints[rowIndex + 1]))
-            if (stack.size > maxStackSize) {
-                maxStackSize = stack.size
-            }
         }
-        println(maxStackSize)
     }
 
-    fun tempPrintGrid(gridToPrint: List<MutableList<Int>>) {
+    fun printGrid(gridToPrint: List<MutableList<Int>>) {
         var result = ""
         for (row in gridToPrint) {
             var rowStr = ""
             for (elem in row) {
-                rowStr += " ${if (elem > 0) "#" else "."} "
+                rowStr += " ${if (elem > 0) "*" else "."} "
             }
             rowStr += "\n"
             result += rowStr

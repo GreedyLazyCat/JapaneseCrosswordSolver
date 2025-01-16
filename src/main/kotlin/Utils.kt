@@ -13,24 +13,32 @@ fun addValueToRange(
     return copy
 }
 
+fun resetGrid(
+    fromGrid: List<MutableList<Int>>,
+    toGrid: MutableList<MutableList<Int>>,
+    fromIndex: Int,
+): MutableList<MutableList<Int>>  {
+    for (i in fromIndex..<fromGrid.size) {
+        toGrid[i] = fromGrid[i]
+    }
+    return toGrid
+}
+
 fun tempCompareGrids(
     A: List<MutableList<Int>>,
     B: List<MutableList<Int>>,
 ): Boolean {
     for (i in A.indices) {
         for (j in B.indices) {
-            if (A[i][j] == 0 && B[i][j] != 0)
-                {
-                    return false
-                }
-            if (A[i][j] > 0 && B[i][j] < 0)
-                {
-                    return false
-                }
-            if (A[i][j] < 0 && B[i][j] > 0)
-                {
-                    return false
-                }
+            if (A[i][j] == 0 && B[i][j] != 0) {
+                return false
+            }
+            if (A[i][j] > 0 && B[i][j] < 0) {
+                return false
+            }
+            if (A[i][j] < 0 && B[i][j] > 0) {
+                return false
+            }
         }
     }
     return true
