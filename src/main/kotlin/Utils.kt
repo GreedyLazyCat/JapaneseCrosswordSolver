@@ -14,10 +14,10 @@ fun addValueToRange(
 }
 
 fun resetGrid(
-    fromGrid: List<MutableList<Int>>,
-    toGrid: MutableList<MutableList<Int>>,
+    fromGrid: Array<IntArray>,
+    toGrid: Array<IntArray>,
     fromIndex: Int,
-): MutableList<MutableList<Int>>  {
+): Array<IntArray> {
     for (i in fromIndex..<fromGrid.size) {
         toGrid[i] = fromGrid[i]
     }

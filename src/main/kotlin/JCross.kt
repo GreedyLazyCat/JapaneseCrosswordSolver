@@ -13,7 +13,7 @@ class JCross(
      * 2 - однозначно закрашен
      * -1 - однозначно не закрашен
      */
-    var grid: List<MutableList<Int>> = List(rowHints.size) { MutableList(colHints.size) { 0 } }
+    var grid: Array<IntArray> = Array(rowHints.size) { IntArray(colHints.size) { 0 } }
 
     val colLength: Int
         get() = rowHints.size
@@ -22,7 +22,7 @@ class JCross(
         get() = colHints.size
 
     fun isRowValid(
-        row: List<Int>,
+        row: IntArray,
         rowHint: List<Int>,
     ): Boolean {
         val gridRowLength = row.size
@@ -53,7 +53,7 @@ class JCross(
      */
     fun isColValid(
         col: Int,
-        gridToValidate: List<MutableList<Int>>,
+        gridToValidate: Array<IntArray>,
         colHint: List<Int>,
         checkLength: Int,
     ): Validity {
@@ -86,22 +86,8 @@ class JCross(
         return Validity.NotViolated
     }
 
-    fun gridColsValidity(checkLength: Int): Validity {
-        var colsValidity = Validity.Solved
-        for (i in 0..<colLength) {
-            var validity = isColValid(i, grid, colHints[i], checkLength)
-            if (validity == Validity.Violated) {
-                return validity
-            }
-            if (validity != Validity.Solved) {
-                colsValidity = validity
-            }
-        }
-        return colsValidity
-    }
-
     fun gridColsValidity(
-        workingGrid: List<MutableList<Int>>,
+        workingGrid: Array<IntArray>,
         workingColHints: List<List<Int>>,
         checkLength: Int,
     ): Validity {
@@ -208,35 +194,6 @@ class JCross(
         }
     }
 
-    fun calculateLeftForRow(row: Int) {
-        val rowHint = rowHints[row].toMutableList()
-        rowHint.reverse()
-        val initPainted = mutableListOf<Int>()
-        for (i in (rowLength - 1) downTo 0) {
-            if (grid[row][i] > 0) {
-                initPainted.add(i)
-            }
-        }
-        val painted = initPainted.toMutableList()
-        var hintIndex = 0
-        var startPainted = painted.removeFirst()
-
-        while (true) {
-//            print("$painted ")
-            if (grid[row][startPainted] > 0 && rowHint[hintIndex] == 0) {
-                println("start painted: $startPainted hintIndex $hintIndex")
-                println("row hint $rowHint")
-                break
-            } else if (grid[row][startPainted] <= 0 && rowHint[hintIndex] == 0) {
-                hintIndex += 1
-                startPainted = painted.removeFirst()
-            } else {
-                rowHint[hintIndex] -= 1
-                startPainted -= 1
-            }
-        }
-    }
-
     /**
      * Предобработка кроссворда. Закрашивание тех клеток, которые могут быть однозначно закранешы.
      * Однозначно закрашенные квадраты помечаются 2.
@@ -290,11 +247,11 @@ class JCross(
     }
 
     fun colorRowByHintAndPlacement(
-        row: List<Int>,
+        row: IntArray,
         rowHint: List<Int>,
         placements: List<Int>,
-    ): MutableList<Int> {
-        val result = row.toMutableList()
+    ): IntArray {
+        val result = row.copyOf()
         for ((i, hint) in rowHint.withIndex()) {
             val placement = placements[i]
             for (j in placement..<(placement + hint)) {
@@ -313,11 +270,11 @@ class JCross(
      */
     fun generateRowVariations(
         rowIndex: Int,
-        workingGrid: List<List<Int>>,
+        workingGrid: Array<IntArray>,
         initRowHint: List<Int>,
-    ): Sequence<Pair<Int, List<Int>>> {
+    ): Sequence<Pair<Int, IntArray>> {
         val rowHint = initRowHint.toMutableList()
-        val row = workingGrid[rowIndex].toMutableList()
+        val row = workingGrid[rowIndex]
         val spaceCount = row.size - rowHint.sum() - (rowHint.size - 1) // Кол-во свободных пробелов
         val spacePlacements =
             buildList<Int> {
@@ -356,13 +313,13 @@ class JCross(
     }
 
     fun solveWithEnumeration() {
-        var workingGrid = grid.map { it.toMutableList() }.toMutableList() // Копирую матрицу для сохранности данных
-        val stack = Stack<Pair<Int, List<Int>>>()
+        var workingGrid = grid.map { it.copyOf() }.toTypedArray() // Копирую матрицу для сохранности данных
+        val stack = Stack<Pair<Int, IntArray>>()
         stack.addAll(generateRowVariations(0, workingGrid, rowHints[0]))
         while (stack.isNotEmpty()) {
             val (rowIndex, variation) = stack.pop()
             workingGrid = resetGrid(grid, workingGrid, rowIndex)
-            workingGrid[rowIndex] = variation.toMutableList()
+            workingGrid[rowIndex] = variation
 
             val validity = gridColsValidity(workingGrid, colHints, checkLength = rowIndex)
 
@@ -384,7 +341,7 @@ class JCross(
         }
     }
 
-    fun printGrid(gridToPrint: List<MutableList<Int>>) {
+    fun printGrid(gridToPrint: Array<IntArray>) {
         var result = ""
         for (row in gridToPrint) {
             var rowStr = ""
@@ -398,15 +355,8 @@ class JCross(
     }
 
     override fun toString(): String {
-        var result = "Row hints: $rowHints\nCol hints: ${colHints}\nGrid:\n"
-//        for (row in grid) {
-//            var rowStr = ""
-//            for (elem in row) {
-//                rowStr += "$elem "
-//            }
-//            rowStr += "\n"
-//            result += rowStr
-//        }
+        var result = "Row hints: $rowHints\nCol hints: ${colHints}\n"
+
         return result
     }
 }

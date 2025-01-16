@@ -28,7 +28,7 @@ class JCrossFactory {
         rowHintSize: Int,
         colHintSize: Int,
     ): JCross {
-        var grid: List<MutableList<Int>> = List(rowHintSize) { MutableList(colHintSize) { 0 } }
+        var grid = Array(rowHintSize) { IntArray(colHintSize) { 0 } }
         for (row in grid.indices) {
             for (col in grid[row].indices) {
                 val randInt = Random.nextInt(100)
@@ -49,7 +49,7 @@ class JCrossFactory {
         return result
     }
 
-    private fun getColHintsFromGrid(grid: List<List<Int>>): List<List<Int>> {
+    private fun getColHintsFromGrid(grid: Array<IntArray>): List<List<Int>> {
         val result = mutableListOf<List<Int>>()
         for (col in 0..<grid.first().size) {
             var hintSet = false
@@ -72,7 +72,7 @@ class JCrossFactory {
         return result
     }
 
-    private fun getRowHintsFromGrid(grid: List<List<Int>>): List<List<Int>> {
+    private fun getRowHintsFromGrid(grid: Array<IntArray>): List<List<Int>> {
         val result = mutableListOf<List<Int>>()
         for (row in grid) {
             var hintSet = false
