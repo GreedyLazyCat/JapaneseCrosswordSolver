@@ -61,7 +61,7 @@ class JCross(
         var hintSet = false
         val figures = mutableListOf<Int>()
 
-        for (row in 0..<checkLength) {
+        for (row in 0..checkLength) {
             if (!hintSet && gridToValidate[row][col] > 0) {
                 figures.add(0)
                 hintSet = true
@@ -73,9 +73,9 @@ class JCross(
                 figures[figures.lastIndex] += 1
             }
         }
-//        if (figures.size > colHint.size) {
-//            return Validity.Violated
-//        }
+        if (figures.size > colHint.size) {
+            return Validity.Violated
+        }
         if (figures == colHint) {
             return Validity.Solved
         }
@@ -370,6 +370,9 @@ class JCross(
                 continue
             }
             if (rowIndex == workingGrid.lastIndex) {
+//                println("Validity $validity")
+//                printGrid(workingGrid)
+
                 if (validity == Validity.Solved) {
                     grid = workingGrid
                     break
@@ -396,14 +399,14 @@ class JCross(
 
     override fun toString(): String {
         var result = "Row hints: $rowHints\nCol hints: ${colHints}\nGrid:\n"
-        for (row in grid) {
-            var rowStr = ""
-            for (elem in row) {
-                rowStr += "$elem "
-            }
-            rowStr += "\n"
-            result += rowStr
-        }
+//        for (row in grid) {
+//            var rowStr = ""
+//            for (elem in row) {
+//                rowStr += "$elem "
+//            }
+//            rowStr += "\n"
+//            result += rowStr
+//        }
         return result
     }
 }

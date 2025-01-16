@@ -43,8 +43,10 @@ class JCrossFactory {
                 grid[row][col] = if (randInt > 50) 1 else 0
             }
         }
-
-        return JCross(getRowHintsFromGrid(grid), getColHintsFromGrid(grid))
+        val result = JCross(getRowHintsFromGrid(grid), getColHintsFromGrid(grid))
+        println("Picture of generated crossword: ")
+        result.printGrid(grid)
+        return result
     }
 
     private fun getColHintsFromGrid(grid: List<List<Int>>): List<List<Int>> {

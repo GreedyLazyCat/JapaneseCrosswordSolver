@@ -1,6 +1,7 @@
 package org.example
 
 import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.module.kotlin.jsonMapper
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -10,7 +11,8 @@ fun solveCrossword() {
     try {
         val cross = JCrossFactory().fromJsonFile(path)
         cross.initialStep()
-
+        println("Hints")
+        println(cross)
         println("Grid on initial Step: ")
         cross.printGrid(cross.grid)
 
@@ -34,6 +36,27 @@ fun crosswordGeneration() {
     val colCount = readln().toIntOrNull() ?: return
     val file = File(path)
     val cross = JCrossFactory().generateCross(rowCount, colCount)
+    val mapper = jsonMapper()
+    val node = mapper.createObjectNode()
+    val rowHintArrayNode = mapper.createArrayNode()
+    for (rowHint in cross.rowHints) {
+        val hintNode = mapper.createArrayNode()
+        for (value in rowHint) {
+            hintNode.add(value)
+        }
+        rowHintArrayNode.add(hintNode)
+    }
+    val colHintArrayNode = mapper.createArrayNode()
+    for (colHint in cross.colHints) {
+        val hintNode = mapper.createArrayNode()
+        for (value in colHint) {
+            hintNode.add(value)
+        }
+        colHintArrayNode.add(hintNode)
+    }
+    node.putIfAbsent("row_hints", rowHintArrayNode)
+    node.putIfAbsent("col_hints", colHintArrayNode)
+    file.writeText(mapper.writeValueAsString(node))
 }
 
 fun printGreeting() {
