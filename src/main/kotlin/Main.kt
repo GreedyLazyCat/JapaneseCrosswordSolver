@@ -4,10 +4,15 @@ import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import java.io.File
 import java.io.FileNotFoundException
+import java.nio.file.Paths
 
 fun solveCrossword() {
     print("Enter file path: ")
-    val path = readln()
+    var path = readln()
+    if (!Paths.get(path).isAbsolute)
+        {
+            path = Paths.get(path).toAbsolutePath().toString()
+        }
     try {
         val cross = JCrossFactory().fromJsonFile(path)
         cross.initialStep()
@@ -29,7 +34,11 @@ fun solveCrossword() {
 
 fun crosswordGeneration() {
     print("Enter save file path: ")
-    val path = readln()
+    var path = readln()
+    if (!Paths.get(path).isAbsolute)
+        {
+            path = Paths.get(path).toAbsolutePath().toString()
+        }
     print("Enter row count: ")
     val rowCount = readln().toIntOrNull() ?: return
     print("Enter col count: ")
