@@ -86,10 +86,12 @@ class JCross(
         /*
         Вот этот момент например сильно ускорил решение кроссворда по пути crosses/tea_pot_fast.json
         с где-то полторы минуты, до примерно 20 секунд!
+        Этот if можно закомментировать для наглядности.
          */
         if (figures.size > 1 && figures.subList(0, figures.lastIndex) != colHint.subList(0, figures.lastIndex)) {
             return Validity.Violated
         }
+        // ---------
         if (figures == colHint) {
             return Validity.Solved
         }
@@ -179,7 +181,6 @@ class JCross(
         for (hint in rowHint) {
             val colorStart = start + freeSpace
             val colorEnd = start + hint - 1
-//            println("For hint $hint: ColorStart ${colorStart + 1} ColorEnd ${colorEnd + 1} Start ${start + 1} FreeSpace $freeSpace")
             colorRangeInRow(row, colorStart, colorEnd, 2)
             start = colorEnd + 2
         }
@@ -350,9 +351,6 @@ class JCross(
                 continue
             }
             if (rowIndex == workingGrid.lastIndex) {
-//                println("Validity $validity")
-//                printGrid(workingGrid)
-
                 if (validity == Validity.Solved) {
                     grid = workingGrid
                     break
