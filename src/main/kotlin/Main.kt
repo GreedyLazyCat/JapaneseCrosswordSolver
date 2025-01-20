@@ -9,10 +9,9 @@ import java.nio.file.Paths
 fun solveCrossword() {
     print("Enter file path: ")
     var path = readln()
-    if (!Paths.get(path).isAbsolute)
-        {
-            path = Paths.get(path).toAbsolutePath().toString()
-        }
+    if (!Paths.get(path).isAbsolute) {
+        path = Paths.get(path).toAbsolutePath().toString()
+    }
     try {
         val cross = JCrossFactory().fromJsonFile(path)
         cross.initialStep()
@@ -35,10 +34,9 @@ fun solveCrossword() {
 fun crosswordGeneration() {
     print("Enter save file path: ")
     var path = readln()
-    if (!Paths.get(path).isAbsolute)
-        {
-            path = Paths.get(path).toAbsolutePath().toString()
-        }
+    if (!Paths.get(path).isAbsolute) {
+        path = Paths.get(path).toAbsolutePath().toString()
+    }
     print("Enter row count: ")
     val rowCount = readln().toIntOrNull() ?: return
     print("Enter col count: ")
@@ -72,7 +70,7 @@ fun printGreeting() {
     println("Choose variant:")
     println("1. Solve crossword from file")
     println("2. Generate random crossword")
-    print("Any other input - exit:")
+    print("Any other input - exit: ")
     val input = readln().toIntOrNull() ?: return
     if (input == 1) {
         solveCrossword()
